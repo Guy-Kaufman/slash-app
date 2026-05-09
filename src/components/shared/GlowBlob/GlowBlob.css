@@ -1,0 +1,36 @@
+.glow-blob {
+  position: absolute;
+  width: 384px;
+  height: 384px;
+  border-radius: var(--radius-full);
+  filter: blur(100px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.glow-blob--purple {
+  background: var(--glow-purple);
+  top: -10%;
+  left: -10%;
+}
+
+.glow-blob--blue {
+  background: var(--glow-blue);
+  bottom: -10%;
+  right: -10%;
+}
+
+.glow-blob--success {
+  background: var(--glow-success);
+  top: 25%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.glow-blob--center-purple {
+  background: var(--glow-purple);
+  top: 30%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0.6;
+}

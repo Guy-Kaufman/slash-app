@@ -1,0 +1,116 @@
+/* ----- Shared auth page styles (used by Login, Register, Forgot password) ----- */
+
+.auth-page {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-8) var(--space-4);
+  width: 100%;
+}
+
+.auth-page__card {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  padding: var(--space-8) var(--space-6);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-card);
+}
+
+.auth-page__orb {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-full);
+  background: var(--gradient-primary);
+  color: var(--color-text-primary);
+  box-shadow: var(--shadow-icon-orb);
+  align-self: flex-start;
+}
+
+.auth-page__orb .material-symbols-outlined {
+  font-size: 28px;
+}
+
+.auth-page__header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.auth-page__title {
+  font-size: var(--font-size-heading-1);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--color-text-primary);
+}
+
+.auth-page__sub {
+  font-size: var(--font-size-body);
+  color: var(--color-text-muted);
+  line-height: 1.5;
+}
+
+.auth-page__form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.auth-page__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.auth-page__label {
+  font-size: var(--font-size-label);
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.auth-page__input {
+  width: 100%;
+  height: 48px;
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border-subtle);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-body);
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.auth-page__input::placeholder {
+  color: var(--color-text-muted);
+}
+
+.auth-page__input:focus {
+  outline: none;
+  border-color: var(--color-primary-soft);
+  box-shadow: 0 0 0 3px rgba(173, 198, 255, 0.15);
+}
+
+.auth-page__inline-link {
+  font-size: var(--font-size-label);
+  font-weight: 600;
+  color: var(--color-primary-soft);
+}
+
+.auth-page__inline-link:hover {
+  opacity: 0.85;
+}
+
+.auth-page__alt {
+  font-size: var(--font-size-label);
+  color: var(--color-text-muted);
+  text-align: center;
+}

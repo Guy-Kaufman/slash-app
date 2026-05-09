@@ -1,0 +1,125 @@
+.savings-page {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: var(--space-6);
+  padding: var(--space-2) var(--space-6) var(--space-12);
+}
+
+.savings-page__hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  text-align: center;
+  padding: var(--space-6) 0 0;
+}
+
+.savings-page__label {
+  font-size: var(--font-size-label);
+  font-weight: 500;
+  color: var(--color-text-muted);
+}
+
+.savings-page__amount {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 2px;
+  font-size: var(--font-size-hero-num);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--color-accent-success);
+}
+
+.savings-page__currency {
+  font-size: 26px;
+}
+
+/* ----- Stat trio ----- */
+.savings-page__stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-3);
+}
+
+.savings-page__stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-4) var(--space-2);
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card-soft);
+}
+
+.savings-page__stat-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.savings-page__stat-value--success {
+  color: var(--color-accent-success);
+}
+
+.savings-page__stat-value--warning {
+  color: var(--color-accent-error);
+}
+
+.savings-page__stat-label {
+  font-size: var(--font-size-label);
+  color: var(--color-text-muted);
+}
+
+/* ----- Filter chips ----- */
+.savings-page__filters {
+  display: flex;
+  gap: var(--space-2);
+  overflow-x: auto;
+  padding-bottom: var(--space-1);
+  margin: 0 calc(var(--space-6) * -1);
+  padding-left: var(--space-6);
+  padding-right: var(--space-6);
+  scrollbar-width: none;
+}
+
+.savings-page__filters::-webkit-scrollbar {
+  display: none;
+}
+
+.savings-page__filter {
+  flex-shrink: 0;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-subtle);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-label);
+  font-weight: 600;
+  white-space: nowrap;
+  transition: color 150ms ease, background 150ms ease;
+}
+
+.savings-page__filter:hover {
+  color: var(--color-text-primary);
+}
+
+.savings-page__filter--active {
+  background: var(--gradient-primary);
+  border-color: transparent;
+  color: var(--color-text-primary);
+  box-shadow: var(--shadow-button);
+}
+
+.savings-page__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.savings-page__cards {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}

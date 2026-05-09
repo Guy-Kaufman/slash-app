@@ -1,0 +1,113 @@
+.onboarding-page {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  width: 100%;
+  padding: var(--space-4) var(--space-6) var(--space-6);
+  overflow: hidden;
+}
+
+.onboarding-page__top {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.onboarding-page__skip {
+  font-size: var(--font-size-label);
+  font-weight: 600;
+  color: var(--color-text-muted);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  transition: color 150ms ease;
+}
+
+.onboarding-page__skip:hover {
+  color: var(--color-text-primary);
+}
+
+.onboarding-page__main {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  text-align: center;
+}
+
+.onboarding-page__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 96px;
+  height: 96px;
+  border-radius: var(--radius-full);
+  background: var(--gradient-primary);
+  color: var(--color-text-primary);
+  box-shadow: var(--shadow-icon-orb);
+  margin-bottom: var(--space-4);
+}
+
+.onboarding-page__icon .material-symbols-outlined {
+  font-size: 44px;
+}
+
+.onboarding-page__title {
+  font-size: var(--font-size-heading-1);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  max-width: 320px;
+}
+
+.onboarding-page__body {
+  font-size: var(--font-size-body);
+  color: var(--color-text-muted);
+  line-height: 1.6;
+  max-width: 360px;
+}
+
+.onboarding-page__progress {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-6);
+}
+
+.onboarding-page__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background: var(--color-border-subtle);
+  transition: background 200ms ease, width 200ms ease;
+}
+
+.onboarding-page__dot--active {
+  width: 24px;
+  background: var(--gradient-primary);
+}
+
+.onboarding-page__cta {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.onboarding-page__back {
+  font-size: var(--font-size-label);
+  font-weight: 600;
+  color: var(--color-text-muted);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-sm);
+}
+
+.onboarding-page__back:hover {
+  color: var(--color-text-primary);
+}

@@ -1,0 +1,49 @@
+.ai-recommendation {
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.12), rgba(59, 130, 246, 0.08));
+  border: 1px solid rgba(139, 92, 246, 0.25);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+}
+
+.ai-recommendation__header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.ai-recommendation__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--gradient-primary);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-micro);
+  font-weight: 700;
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-sm);
+  letter-spacing: 0.5px;
+  min-width: 28px;
+  height: 20px;
+}
+
+.ai-recommendation__title {
+  font-size: var(--font-size-body);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.ai-recommendation__body {
+  font-size: var(--font-size-body);
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+}
+
+.ai-recommendation__savings {
+  color: var(--color-success-light);
+}
+
+.ai-recommendation__savings strong {
+  font-weight: 600;
+  color: var(--color-success-light);
+}

@@ -1,0 +1,29 @@
+.ui-checkbox {
+  width: 20px;
+  height: 20px;
+  border: 1.5px solid var(--color-border-emphasis);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  outline: none;
+  flex-shrink: 0;
+  transition: border-color 150ms ease, background 150ms ease;
+}
+
+.ui-checkbox:hover {
+  border-color: var(--color-primary);
+}
+
+.ui-checkbox[data-state='checked'] {
+  background: var(--gradient-primary);
+  border-color: transparent;
+}
+
+.ui-checkbox-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
