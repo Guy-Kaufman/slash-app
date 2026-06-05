@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { Toaster } from 'sonner'
 import PublicLayout from './layouts/PublicLayout/PublicLayout'
 import AppLayout from './layouts/AppLayout/AppLayout'
 import { SubscriptionsProvider } from './context/SubscriptionsContext'
@@ -18,6 +19,7 @@ import SettingsPage from './pages/app/SettingsPage/SettingsPage'
 function App() {
   return (
     <SubscriptionsProvider>
+      <Toaster position="top-center" theme="dark" richColors />
       <BrowserRouter>
         <Routes>
           <Route element={<PublicLayout />}>

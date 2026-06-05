@@ -16,9 +16,10 @@ function SubscriptionCard({ subscription, onClick, className = '' }) {
     }
   }
 
-  const isWarning = subscription.status === 'warning' || subscription.status === 'duplicate'
+  const isCut = subscription.status === 'cut'
+  const isWarning = !isCut && (subscription.status === 'warning' || subscription.status === 'duplicate')
   const tone = subscription.tone || subscription.logoColor || '#3B82F6'
-  const actionLabel = subscription.actionLabel || (isWarning ? 'Review' : 'Manage')
+  const actionLabel = subscription.actionLabel || (isCut ? 'Cancelled' : isWarning ? 'Review' : 'Manage')
 
   return (
     <div
@@ -29,6 +30,7 @@ function SubscriptionCard({ subscription, onClick, className = '' }) {
       className={[
         'subscription-card',
         isWarning ? 'subscription-card--warning' : '',
+        isCut ? 'subscription-card--cut' : '',
         className,
       ].filter(Boolean).join(' ')}
     >

@@ -29,6 +29,19 @@
   border-color: var(--color-accent-error-border);
 }
 
+.subscription-card--cut {
+  opacity: 0.55;
+}
+
+.subscription-card--cut .subscription-card__name {
+  text-decoration: line-through;
+  text-decoration-color: var(--color-text-muted);
+}
+
+.subscription-card--cut .subscription-card__action {
+  color: var(--color-accent-success);
+}
+
 .subscription-card__bar {
   position: absolute;
   top: 0;

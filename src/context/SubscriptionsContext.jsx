@@ -98,6 +98,60 @@ export function SubscriptionsProvider({ children }) {
     } catch {}
   }
 
+  // Persist a change back to Supabase. Updates local state optimistically,
+  // writes the (camelCase → snake_case mapped) patch to the row, and reverts
+  // the optimistic update if the write fails.
+  const updateStatus = async (id, patch) => {
+    const apply = (list) =>
+      list ? list.map((s) => (s.id === id ? { ...s, ...patch } : s)) : list
+
+    // Snapshot both sources so we can roll back if the write fails.
+    const prevRemote = remote
+    const prevParsed = parsed
+
+    setRemote((cur) => apply(cur))
+    setParsed((cur) => {
+      const next = apply(cur)
+      if (next && next !== cur) {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
+        } catch {}
+      }
+      return next
+    })
+
+    const dbPatch = {}
+    if ('status' in patch) dbPatch.status = patch.status
+    if ('flagged' in patch) dbPatch.flagged = patch.flagged
+    if ('warningLabel' in patch) dbPatch.warning_label = patch.warningLabel
+
+    // .select() returns the affected rows. An RLS-blocked update succeeds with
+    // zero rows and no error — so treat "no rows changed" as a failure, else
+    // the UI would celebrate a write that never happened.
+    const { data, error } = await supabase
+      .from('subscriptions')
+      .update(dbPatch)
+      .eq('id', id)
+      .select()
+
+    const wroteNothing = !error && (!data || data.length === 0)
+    if (error || wroteNothing) {
+      setRemote(prevRemote)
+      setParsed(prevParsed)
+      if (prevParsed) {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(prevParsed))
+        } catch {}
+      }
+      return {
+        error:
+          error ||
+          new Error('No rows were updated — the change was not saved (check permissions).'),
+      }
+    }
+    return { error: null }
+  }
+
   const value = useMemo(() => {
     // Priority: uploaded statement → Supabase data → bundled mock fallback.
     const list =
@@ -114,6 +168,7 @@ export function SubscriptionsProvider({ children }) {
       totals,
       setUploaded,
       reset,
+      updateStatus,
       hydrated,
     }
   }, [parsed, remote, sourceLabel, hydrated])

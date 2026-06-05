@@ -1,4 +1,6 @@
+import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import { toast } from 'sonner'
 import ScreenHeader from '../../../components/shared/ScreenHeader/ScreenHeader'
 import StatusBadge from '../../../components/shared/StatusBadge/StatusBadge'
 import SecondaryButton from '../../../components/shared/SecondaryButton/SecondaryButton'
@@ -8,9 +10,27 @@ import './SubscriptionDetailPage.css'
 function SubscriptionDetailPage() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { subscriptions } = useSubscriptions()
+  const { subscriptions, updateStatus } = useSubscriptions()
+  const [busy, setBusy] = useState(false)
 
   const subscription = subscriptions.find((s) => s.id === id) || subscriptions[0]
+  const isCut = subscription.status === 'cut'
+
+  const handleCancel = async () => {
+    setBusy(true)
+    const { error } = await updateStatus(subscription.id, {
+      status: 'cut',
+      flagged: false,
+      warningLabel: null,
+    })
+    setBusy(false)
+    if (error) {
+      toast.error('Could not cancel — please try again.')
+      return
+    }
+    toast.success(`${subscription.name} cancelled and saved to your account.`)
+    navigate('/dashboard')
+  }
 
   const isFlagged =
     subscription.flagged ||
@@ -88,16 +108,17 @@ function SubscriptionDetailPage() {
         <p className="detail-page__recommendation">{subscription.recommendation}</p>
 
         <div className="detail-page__actions">
-          <SecondaryButton
-            variant="danger"
-            onClick={() => navigate(`/review?cancel=${subscription.id}`)}
-          >
-            <span className="material-symbols-outlined">block</span>
-            Cancel Subscription
-          </SecondaryButton>
+          {isCut ? (
+            <StatusBadge variant="cut" label="Cancelled — saved to your account" />
+          ) : (
+            <SecondaryButton variant="danger" onClick={handleCancel} disabled={busy}>
+              <span className="material-symbols-outlined">block</span>
+              {busy ? 'Cancelling…' : 'Cancel Subscription'}
+            </SecondaryButton>
+          )}
 
           <SecondaryButton onClick={() => navigate('/dashboard')}>
-            Keep Subscription
+            {isCut ? 'Back to Subscriptions' : 'Keep Subscription'}
           </SecondaryButton>
         </div>
       </main>
