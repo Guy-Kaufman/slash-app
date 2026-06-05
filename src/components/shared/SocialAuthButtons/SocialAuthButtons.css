@@ -1,0 +1,46 @@
+/* ----- Social auth provider buttons (Google / Microsoft / Facebook) ----- */
+
+.social-auth {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.social-auth__button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: 48px;
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border-subtle);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-label);
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 150ms ease, background 150ms ease;
+}
+
+.social-auth__button:hover {
+  background: var(--color-surface-bright);
+  border-color: var(--color-primary-soft);
+}
+
+.social-auth__button:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.social-auth__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.social-auth__label {
+  line-height: 1.2;
+}

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import GradientButton from '../../../components/shared/GradientButton/GradientButton'
+import SocialAuthButtons from '../../../components/shared/SocialAuthButtons/SocialAuthButtons'
 import './LoginPage.css'
 
 function LoginPage() {
@@ -10,6 +11,10 @@ function LoginPage() {
 
   const handleSubmit = (event) => {
     event.preventDefault()
+    navigate('/dashboard')
+  }
+
+  const handleSocialSelect = () => {
     navigate('/dashboard')
   }
 
@@ -24,6 +29,12 @@ function LoginPage() {
           <h1 className="auth-page__title">Welcome back</h1>
           <p className="auth-page__sub">Sign in to keep cutting hidden expenses.</p>
         </header>
+
+        <SocialAuthButtons onSelect={handleSocialSelect} />
+
+        <div className="auth-page__divider" role="separator">
+          <span>or continue with email</span>
+        </div>
 
         <form className="auth-page__form" onSubmit={handleSubmit}>
           <label className="auth-page__field">

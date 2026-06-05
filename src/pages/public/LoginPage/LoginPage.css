@@ -59,6 +59,22 @@
   line-height: 1.5;
 }
 
+.auth-page__divider {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--font-size-label);
+  color: var(--color-text-muted);
+}
+
+.auth-page__divider::before,
+.auth-page__divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--color-border-subtle);
+}
+
 .auth-page__form {
   display: flex;
   flex-direction: column;
