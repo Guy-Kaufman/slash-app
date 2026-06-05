@@ -5,8 +5,21 @@
   width: 100%;
   min-height: 100vh;
   min-height: 100dvh;
-  background: var(--color-bg);
+  background: var(--bg-mesh), var(--color-bg);
+  background-attachment: fixed;
   overflow-x: hidden;
+}
+
+.public-layout::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: var(--grain);
+  background-size: 160px 160px;
+  opacity: 0.045;
+  mix-blend-mode: soft-light;
+  pointer-events: none;
+  z-index: 0;
 }
 
 .public-layout__main {

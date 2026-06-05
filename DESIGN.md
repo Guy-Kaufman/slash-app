@@ -11,12 +11,12 @@ Aligned with the Stitch export in `stitch_markdown_app_designer 2/`.
 
 ## Visual direction
 
-- Dark navy fintech background (`#0B1437`)
+- Dark navy fintech background (`#0B1437`) with a layered violet gradient mesh (`--bg-mesh`) and subtle grain overlay (`--grain`) for depth — never a flat fill
 - Clean and minimal mobile-first interface
 - Premium but friendly feeling
 - Large financial numbers (hero typography)
 - Rounded surface cards (12px–16px corners)
-- Blue → purple gradients on primary CTAs
+- Purple → violet gradients on primary CTAs (pill-shaped, iZPay-inspired)
 - Green highlights for savings and positive actions
 - Red highlights for warnings and dropped subscriptions
 - Material Symbols Outlined line icons
@@ -34,10 +34,10 @@ Aligned with the Stitch export in `stitch_markdown_app_designer 2/`.
 | `--color-border-subtle` | `#1B254B` | Hairline borders inside cards |
 | `--color-text-primary` | `#FFFFFF` | Headings, hero numbers, primary content |
 | `--color-text-muted` | `#A3AED0` | Labels, descriptions, placeholders, inactive nav |
-| `--color-primary` | `#3B82F6` | Primary brand blue (start of CTA gradient) |
-| `--color-primary-soft` | `#adc6ff` | Soft brand blue for icon labels and "Manage" links |
-| `--color-secondary` | `#8B5CF6` | Brand violet (end of CTA gradient) |
-| `--color-primary-container` | `#4d8eff` | Gradient start on confirm cancellation CTA |
+| `--color-primary` | `#7B61FF` | Primary brand violet (start of CTA gradient, iZPay-inspired) |
+| `--color-primary-soft` | `#C4B5FD` | Soft brand violet for icon labels and "Manage" links |
+| `--color-secondary` | `#A855F7` | Brand purple (end of CTA gradient) |
+| `--color-primary-container` | `#6D5DFB` | Gradient start on confirm cancellation CTA |
 | `--color-secondary-container` | `#571bc1` | Gradient end on confirm cancellation CTA |
 | `--color-accent-success` | `#22C55E` | Savings, positive numbers, success states |
 | `--color-accent-error` | `#EF4444` | Warnings, expensive subscriptions, danger CTAs |
@@ -46,31 +46,35 @@ Aligned with the Stitch export in `stitch_markdown_app_designer 2/`.
 
 | Token | Value | Usage |
 | --- | --- | --- |
-| `--gradient-primary` | `linear-gradient(135deg, #3B82F6 0%, #8B5CF6 100%)` | Logo orb, primary CTA buttons |
-| `--gradient-confirm` | `linear-gradient(90deg, #4d8eff 0%, #571bc1 100%)` | Confirm cancellation CTA |
+| `--gradient-primary` | `linear-gradient(135deg, #6D5DFB 0%, #A855F7 100%)` | Logo orb, primary CTA buttons |
+| `--gradient-confirm` | `linear-gradient(90deg, #7B61FF 0%, #571bc1 100%)` | Confirm cancellation CTA |
 | `--gradient-success-line` | `linear-gradient(90deg, rgba(34,197,94,0.4) 0%, #22C55E 50%, rgba(34,197,94,0.4) 100%)` | Top accent line on savings card |
 
 ### Glows
 
 | Token | Value | Usage |
 | --- | --- | --- |
-| `--glow-purple` | `rgba(139, 92, 246, 0.20)` | Top-left blob behind welcome |
-| `--glow-blue` | `rgba(59, 130, 246, 0.20)` | Bottom-right blob behind welcome |
+| `--glow-purple` | `rgba(139, 92, 246, 0.30)` | Top-left blob behind welcome |
+| `--glow-blue` | `rgba(123, 97, 255, 0.22)` | Bottom-right blob behind welcome |
 | `--glow-success` | `rgba(34, 197, 94, 0.05)` | Ambient glow behind cancel confirmation |
 
 ---
 
 ## Typography
 
-- **Font family:** Inter (loaded from Google Fonts, weights 400/500/700)
+- **Display font (`--font-display`):** Bricolage Grotesque — headings, hero numbers, wordmark. Characterful editorial grotesque, tight negative tracking (-0.03 to -0.045em).
+- **Body font (`--font-main`):** Hanken Grotesk — copy, labels, UI. Warm, refined, readable.
+- Both loaded from Google Fonts. Financial numbers use tabular figures (`font-variant-numeric: tabular-nums`).
 - All sizes in pixels with explicit line-height.
 
 | Token | Size | Weight | Line-height | Usage |
 | --- | --- | --- | --- | --- |
-| `--font-size-heading-1` | `28px` | 700 | 1.3 | Page titles, hero text, "Slash" wordmark |
-| `--font-size-hero-num` | `32px` | 700 | 1.2 | Monthly spending, savings numbers |
+| `--font-size-hero-display` | `60px` | 700 | 0.92 | Dashboard hero number (display font, left-aligned) |
+| `--font-size-heading-1` | `30px` | 700 | 1.05 | Page titles, "Slash" wordmark (display font) |
+| `--font-size-hero-num` | `32px` | 700 | 1.2 | Secondary hero numbers |
 | `--font-size-body` | `16px` | 400 | 1.5 | Default copy, subscription names |
 | `--font-size-label` | `13px` | 500 | 1.4 | Labels, captions, button text, nav labels |
+| `--tracking-eyebrow` | `0.14em` | — | — | Uppercase eyebrow labels above hero numbers |
 
 ---
 
@@ -94,10 +98,10 @@ Aligned with the Stitch export in `stitch_markdown_app_designer 2/`.
 
 | Token | Value | Usage |
 | --- | --- | --- |
-| `--radius-sm` | `8px` | Small chips, inputs |
-| `--radius-md` | `12px` | Cards, buttons |
-| `--radius-lg` | `16px` | Large action buttons |
-| `--radius-xl` | `20px` | Hero cards |
+| `--radius-sm` | `12px` | Small chips, inputs |
+| `--radius-md` | `16px` | Cards, buttons |
+| `--radius-lg` | `20px` | Large action buttons |
+| `--radius-xl` | `24px` | Hero cards |
 | `--radius-pill` | `9999px` | Pills, status badges |
 | `--radius-full` | `50%` | Circular avatars and icon orbs |
 
@@ -107,10 +111,10 @@ Aligned with the Stitch export in `stitch_markdown_app_designer 2/`.
 
 | Token | Value | Usage |
 | --- | --- | --- |
-| `--shadow-card` | `0 4px 20px rgba(0,0,0,0.4)` | Surface cards |
-| `--shadow-button` | `0 8px 24px rgba(59,130,246,0.35)` | Primary CTA |
-| `--shadow-success` | `0 8px 30px rgba(34,197,94,0.05)` | Savings highlight card |
-| `--shadow-icon-orb` | `0 4px 20px rgba(0,0,0,0.4)` | Welcome orb |
+| `--shadow-card` | `0 10px 30px rgba(0,0,0,0.25)` | Surface cards |
+| `--shadow-button` | `0 12px 30px rgba(123,97,255,0.40)` | Primary CTA (purple glow) |
+| `--shadow-success` | `0 8px 30px rgba(34,197,94,0.08)` | Savings highlight card |
+| `--shadow-icon-orb` | `0 10px 28px rgba(123,97,255,0.35)` | Welcome orb (purple glow) |
 
 ---
 
@@ -118,7 +122,7 @@ Aligned with the Stitch export in `stitch_markdown_app_designer 2/`.
 
 ### Buttons
 
-- **Primary CTA** — full-width, 56px tall, `--radius-md`, gradient background `--gradient-primary`, white bold label, soft shadow.
+- **Primary CTA** — full-width, 56px tall, `--radius-pill` (pill-shaped), gradient background `--gradient-primary`, white bold label, purple glow shadow (`--shadow-button`).
 - **Confirm CTA** — gradient `--gradient-confirm`, used on cancel confirmation.
 - **Secondary** — surface background, 1px subtle border, white label, same radius.
 - **Danger** — surface background, 1px `accent-error/50` border, accent-error label and icon.
