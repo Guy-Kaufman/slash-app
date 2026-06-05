@@ -32,5 +32,8 @@ dist-ssr
 # Office temp lock files
 ~$*
 
+# Raw asset drop folder — logos are copied into src/assets/banks/
+/Bank Logos/
+
 # Claude Code local config
 .claude/

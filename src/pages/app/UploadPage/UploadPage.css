@@ -202,19 +202,31 @@
 }
 
 .upload-page__banks-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-3);
 }
 
-.upload-page__bank-pill {
-  display: inline-flex;
+.upload-page__bank-tile {
+  display: flex;
   align-items: center;
-  padding: var(--space-2) var(--space-4);
-  border-radius: var(--radius-pill);
-  background: var(--color-surface);
-  border: 1px solid var(--color-border-subtle);
-  font-size: var(--font-size-label);
-  font-weight: 600;
-  color: var(--color-primary-soft);
+  justify-content: center;
+  height: 60px;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-tile-light);
+  box-shadow: var(--shadow-card-soft);
+  transition: transform 150ms ease, box-shadow 150ms ease;
+}
+
+.upload-page__bank-tile:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-card);
+}
+
+.upload-page__bank-logo {
+  max-width: 100%;
+  max-height: 30px;
+  width: auto;
+  object-fit: contain;
 }

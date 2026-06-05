@@ -128,9 +128,14 @@ function UploadPage() {
         <h2 className="upload-page__banks-title">Supported banks</h2>
         <div className="upload-page__banks-list">
           {SUPPORTED_BANKS.map((bank) => (
-            <span key={bank.id} className="upload-page__bank-pill">
-              {bank.name}
-            </span>
+            <div key={bank.id} className="upload-page__bank-tile" title={bank.name}>
+              <img
+                src={bank.logo}
+                alt={bank.name}
+                className="upload-page__bank-logo"
+                loading="lazy"
+              />
+            </div>
           ))}
         </div>
       </section>

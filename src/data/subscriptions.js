@@ -1,3 +1,10 @@
+import leumiLogo from '../assets/banks/leumi.png'
+import hapoalimLogo from '../assets/banks/hapoalim.jpg'
+import discountLogo from '../assets/banks/discount.png'
+import mizrahiLogo from '../assets/banks/mizrahi.png'
+import firstInternationalLogo from '../assets/banks/first-international.png'
+import yahavLogo from '../assets/banks/yahav.png'
+
 /**
  * Slash — dummy subscription data.
  * No backend connection. All data is placeholder.
@@ -321,10 +328,12 @@ export const TOTALS = {
 }
 
 export const SUPPORTED_BANKS = [
-  { id: 'leumi', name: 'Leumi' },
-  { id: 'hapoalim', name: 'Hapoalim' },
-  { id: 'discount', name: 'Discount' },
-  { id: 'mizrahi', name: 'Mizrahi' },
+  { id: 'leumi', name: 'Bank Leumi', logo: leumiLogo },
+  { id: 'hapoalim', name: 'Bank Hapoalim', logo: hapoalimLogo },
+  { id: 'discount', name: 'Discount Bank', logo: discountLogo },
+  { id: 'mizrahi', name: 'Mizrahi-Tefahot', logo: mizrahiLogo },
+  { id: 'first-international', name: 'First International', logo: firstInternationalLogo },
+  { id: 'yahav', name: 'Bank Yahav', logo: yahavLogo },
 ]
 
 export const ONBOARDING_STEPS = [
