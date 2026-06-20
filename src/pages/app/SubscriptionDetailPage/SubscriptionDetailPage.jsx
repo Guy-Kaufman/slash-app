@@ -1,36 +1,48 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { toast } from 'sonner'
 import ScreenHeader from '../../../components/shared/ScreenHeader/ScreenHeader'
 import StatusBadge from '../../../components/shared/StatusBadge/StatusBadge'
 import SecondaryButton from '../../../components/shared/SecondaryButton/SecondaryButton'
+import AIRecommendation from '../../../components/page-specific/AIRecommendation/AIRecommendation'
 import { useSubscriptions } from '../../../context/SubscriptionsContext'
+import { fetchRecommendation } from '../../../lib/recommend'
 import './SubscriptionDetailPage.css'
 
 function SubscriptionDetailPage() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { subscriptions, updateStatus } = useSubscriptions()
-  const [busy, setBusy] = useState(false)
+  const { subscriptions } = useSubscriptions()
 
   const subscription = subscriptions.find((s) => s.id === id) || subscriptions[0]
-  const isCut = subscription.status === 'cut'
+  const isCut = subscription?.status === 'cut'
 
-  const handleCancel = async () => {
-    setBusy(true)
-    const { error } = await updateStatus(subscription.id, {
-      status: 'cut',
-      flagged: false,
-      warningLabel: null,
+  // Bundled recommendation shows instantly; the AI one replaces it when ready.
+  const [aiText, setAiText] = useState(null)
+  const [aiLoading, setAiLoading] = useState(false)
+
+  useEffect(() => {
+    if (!subscription) return
+    let active = true
+    /* eslint-disable react-hooks/set-state-in-effect */
+    setAiText(null)
+    setAiLoading(true)
+    /* eslint-enable react-hooks/set-state-in-effect */
+    fetchRecommendation(subscription).then((text) => {
+      if (active) {
+        setAiText(text)
+        setAiLoading(false)
+      }
     })
-    setBusy(false)
-    if (error) {
-      toast.error('Could not cancel — please try again.')
-      return
+    return () => {
+      active = false
     }
-    toast.success(`${subscription.name} cancelled and saved to your account.`)
-    navigate('/dashboard')
-  }
+  }, [subscription?.id]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  if (!subscription) return null
+
+  const handleCancel = () => navigate(`/review?cancel=${subscription.id}`)
+
+  const showSaving = ['warning', 'duplicate', 'unused'].includes(subscription.status)
 
   const isFlagged =
     subscription.flagged ||
@@ -105,15 +117,20 @@ function SubscriptionDetailPage() {
           </div>
         </section>
 
-        <p className="detail-page__recommendation">{subscription.recommendation}</p>
+        <AIRecommendation
+          text={aiText || subscription.recommendation}
+          savingsAmount={showSaving ? subscription.yearlyCost : undefined}
+          loading={aiLoading && !subscription.recommendation}
+          live={!!aiText}
+        />
 
         <div className="detail-page__actions">
           {isCut ? (
             <StatusBadge variant="cut" label="Cancelled — saved to your account" />
           ) : (
-            <SecondaryButton variant="danger" onClick={handleCancel} disabled={busy}>
+            <SecondaryButton variant="danger" onClick={handleCancel}>
               <span className="material-symbols-outlined">block</span>
-              {busy ? 'Cancelling…' : 'Cancel Subscription'}
+              Cancel Subscription
             </SecondaryButton>
           )}
 

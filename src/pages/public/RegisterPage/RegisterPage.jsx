@@ -1,6 +1,9 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { toast } from 'sonner'
 import GradientButton from '../../../components/shared/GradientButton/GradientButton'
+import SocialAuthButtons from '../../../components/shared/SocialAuthButtons/SocialAuthButtons'
+import { supabase } from '../../../lib/supabaseClient'
 import '../LoginPage/LoginPage.css'
 
 function RegisterPage() {
@@ -8,9 +11,27 @@ function RegisterPage() {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [busy, setBusy] = useState(false)
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault()
+    setBusy(true)
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { data: { full_name: name } },
+    })
+    setBusy(false)
+    if (error) {
+      toast.error(error.message || 'Could not create the account. Try a different email.')
+      return
+    }
+    // When email confirmation is enabled, signUp returns no session.
+    if (!data.session) {
+      toast.success('Account created — check your inbox to confirm, then sign in.')
+      navigate('/login')
+      return
+    }
     navigate('/onboarding')
   }
 
@@ -27,6 +48,12 @@ function RegisterPage() {
             Find every recurring charge in less than three minutes.
           </p>
         </header>
+
+        <SocialAuthButtons />
+
+        <div className="auth-page__divider" role="separator">
+          <span>or sign up with email</span>
+        </div>
 
         <form className="auth-page__form" onSubmit={handleSubmit}>
           <label className="auth-page__field">
@@ -68,7 +95,9 @@ function RegisterPage() {
             />
           </label>
 
-          <GradientButton type="submit">Create account</GradientButton>
+          <GradientButton type="submit" disabled={busy}>
+            {busy ? 'Creating account…' : 'Create account'}
+          </GradientButton>
         </form>
 
         <p className="auth-page__alt">

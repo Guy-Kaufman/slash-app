@@ -1,3 +1,5 @@
+import { toast } from 'sonner'
+import { supabase } from '../../../lib/supabaseClient'
 import './SocialAuthButtons.css'
 
 const PROVIDERS = [
@@ -37,7 +39,19 @@ const PROVIDERS = [
   },
 ]
 
-function SocialAuthButtons({ onSelect }) {
+function SocialAuthButtons() {
+  const handleProvider = async (id) => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: id,
+      options: { redirectTo: `${window.location.origin}/dashboard` },
+    })
+    if (error) {
+      toast.error(
+        `${id[0].toUpperCase() + id.slice(1)} sign-in isn't enabled yet. Use email instead.`,
+      )
+    }
+  }
+
   return (
     <div className="social-auth">
       {PROVIDERS.map((provider) => (
@@ -45,7 +59,7 @@ function SocialAuthButtons({ onSelect }) {
           key={provider.id}
           type="button"
           className="social-auth__button"
-          onClick={() => onSelect?.(provider.id)}
+          onClick={() => handleProvider(provider.id)}
         >
           <span className="social-auth__icon">{provider.icon}</span>
           <span className="social-auth__label">{provider.label}</span>

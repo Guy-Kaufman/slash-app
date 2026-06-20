@@ -1,15 +1,26 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { MOCK_USER } from '../../../data/subscriptions'
 import { useSubscriptions } from '../../../context/SubscriptionsContext'
 import './SettingsPage.css'
+
+function deriveProfile(user) {
+  const email = user?.email || 'you@email.com'
+  const name = user?.user_metadata?.full_name || email.split('@')[0]
+  const initials = name
+    .split(/[\s.@_-]+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((p) => p[0].toUpperCase())
+    .join('')
+  return { email, name, initials: initials || email[0].toUpperCase() }
+}
 
 const PREFERENCES = [
   {
     id: 'language',
     icon: 'translate',
     title: 'Language',
-    description: 'Hebrew, Arabic, or Russian for cancellation letters',
+    description: 'Interface language',
     value: 'English',
   },
   {
@@ -37,22 +48,28 @@ const ACCOUNT = [
 function SettingsPage() {
   const navigate = useNavigate()
   const [notifications, setNotifications] = useState(true)
-  const { hasUploaded, reset } = useSubscriptions()
+  const { user, reset, signOut } = useSubscriptions()
+  const profile = deriveProfile(user)
 
-  const handleAccountClick = (id) => {
+  const handleAccountClick = async (id) => {
     if (id === 'delete') {
-      reset()
+      await reset()
       navigate('/upload')
     }
+  }
+
+  const handleSignOut = async () => {
+    await signOut()
+    navigate('/')
   }
 
   return (
     <div className="settings-page">
       <header className="settings-page__profile">
-        <div className="settings-page__avatar">{MOCK_USER.initials}</div>
+        <div className="settings-page__avatar">{profile.initials}</div>
         <div>
-          <h2 className="settings-page__name">{MOCK_USER.name}</h2>
-          <p className="settings-page__email">{MOCK_USER.email}</p>
+          <h2 className="settings-page__name">{profile.name}</h2>
+          <p className="settings-page__email">{profile.email}</p>
         </div>
       </header>
 
@@ -110,7 +127,7 @@ function SettingsPage() {
       <button
         type="button"
         className="settings-page__signout"
-        onClick={() => navigate('/')}
+        onClick={handleSignOut}
       >
         Sign out
       </button>

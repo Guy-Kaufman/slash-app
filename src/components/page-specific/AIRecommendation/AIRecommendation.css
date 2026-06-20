@@ -33,6 +33,16 @@
   color: var(--color-text-primary);
 }
 
+.ai-recommendation__live {
+  color: var(--color-success-light);
+  font-weight: 500;
+}
+
+.ai-recommendation__body--loading {
+  opacity: 0.6;
+  font-style: italic;
+}
+
 .ai-recommendation__body {
   font-size: var(--font-size-body);
   color: var(--color-text-secondary);

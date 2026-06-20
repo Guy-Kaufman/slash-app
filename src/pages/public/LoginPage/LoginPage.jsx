@@ -1,20 +1,26 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { toast } from 'sonner'
 import GradientButton from '../../../components/shared/GradientButton/GradientButton'
 import SocialAuthButtons from '../../../components/shared/SocialAuthButtons/SocialAuthButtons'
+import { supabase } from '../../../lib/supabaseClient'
 import './LoginPage.css'
 
 function LoginPage() {
   const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [busy, setBusy] = useState(false)
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault()
-    navigate('/dashboard')
-  }
-
-  const handleSocialSelect = () => {
+    setBusy(true)
+    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    setBusy(false)
+    if (error) {
+      toast.error(error.message || 'Could not sign in — check your details and try again.')
+      return
+    }
     navigate('/dashboard')
   }
 
@@ -30,7 +36,7 @@ function LoginPage() {
           <p className="auth-page__sub">Sign in to keep cutting hidden expenses.</p>
         </header>
 
-        <SocialAuthButtons onSelect={handleSocialSelect} />
+        <SocialAuthButtons />
 
         <div className="auth-page__divider" role="separator">
           <span>or continue with email</span>
@@ -67,7 +73,9 @@ function LoginPage() {
             Forgot your password?
           </Link>
 
-          <GradientButton type="submit">Sign in</GradientButton>
+          <GradientButton type="submit" disabled={busy}>
+            {busy ? 'Signing in…' : 'Sign in'}
+          </GradientButton>
         </form>
 
         <p className="auth-page__alt">

@@ -1,9 +1,13 @@
-import { createContext, useContext, useEffect, useMemo, useState } from 'react'
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react'
 import { SUBSCRIPTIONS as DEFAULT_SUBS } from '../data/subscriptions'
 import { supabase } from '../lib/supabaseClient'
-
-const STORAGE_KEY = 'slash:subscriptions'
-const SOURCE_KEY = 'slash:source'
 
 const SubscriptionsContext = createContext(null)
 
@@ -11,6 +15,7 @@ const SubscriptionsContext = createContext(null)
 function mapRow(row) {
   return {
     id: row.id,
+    slug: row.slug,
     name: row.name,
     plan: row.plan,
     category: row.category,
@@ -32,146 +37,227 @@ function mapRow(row) {
   }
 }
 
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}/
+const isoDateOrNull = (v) =>
+  typeof v === 'string' && ISO_DATE.test(v) ? v.slice(0, 10) : null
+
+// App shape → DB insert row (with the owning user). Generates a fresh uuid for
+// each row and keeps the original short id as `slug` (used for display only).
+function toDbRow(sub, userId) {
+  return {
+    id: crypto.randomUUID(),
+    user_id: userId,
+    slug: sub.slug || sub.id || null,
+    name: sub.name,
+    plan: sub.plan ?? null,
+    category: sub.category ?? null,
+    amount: sub.amount ?? 0,
+    billing_cycle: sub.billingCycle || 'monthly',
+    status: sub.status || 'active',
+    flagged: !!sub.flagged,
+    tone: sub.tone ?? null,
+    icon: sub.icon ?? null,
+    initials: sub.initials ?? null,
+    last_charge_date: isoDateOrNull(sub.lastChargeDate),
+    start_date: isoDateOrNull(sub.startDate),
+    last_usage: sub.lastUsage ?? null,
+    next_billing: sub.nextBilling ?? null,
+    total_paid: sub.totalPaid ?? 0,
+    yearly_cost: sub.yearlyCost ?? (sub.amount ?? 0) * 12,
+    warning_label: sub.warningLabel ?? null,
+    recommendation: sub.recommendation ?? null,
+  }
+}
+
 export function SubscriptionsProvider({ children }) {
-  const [parsed, setParsed] = useState(null)
-  const [remote, setRemote] = useState(null)
+  const [session, setSession] = useState(null)
+  const [authReady, setAuthReady] = useState(false)
+  const [subscriptions, setSubscriptions] = useState(null) // null until loaded
   const [sourceLabel, setSourceLabel] = useState(null)
-  const [hydrated, setHydrated] = useState(false)
+  const [loadingData, setLoadingData] = useState(false)
 
-  // Hydrate from localStorage on first mount
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY)
-      const src = localStorage.getItem(SOURCE_KEY)
-      if (raw) {
-        const stored = JSON.parse(raw)
-        if (Array.isArray(stored) && stored.length) {
-          setParsed(stored)
-          if (src) setSourceLabel(src)
-        }
-      }
-    } catch {
-      // ignore corrupt cache
-    }
-    setHydrated(true)
-  }, [])
+  const user = session?.user ?? null
 
-  // Fetch subscriptions from Supabase. Used as the data source when the user
-  // has not uploaded a statement; falls back silently to the bundled mock data.
+  // Track the auth session (initial + future changes).
   useEffect(() => {
     let active = true
-    ;(async () => {
+    supabase.auth.getSession().then(({ data }) => {
+      if (!active) return
+      setSession(data.session)
+      setAuthReady(true)
+    })
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, next) => {
+      setSession(next)
+    })
+    return () => {
+      active = false
+      sub.subscription.unsubscribe()
+    }
+  }, [])
+
+  // Insert the bundled starter set for a brand-new account so the dashboard is
+  // never empty. Returns the app-shaped rows (or the in-memory fallback).
+  const seedFor = useCallback(async (userId) => {
+    const rows = DEFAULT_SUBS.map((s) => toDbRow({ ...s, slug: s.id }, userId))
+    const { data, error } = await supabase.from('subscriptions').insert(rows).select()
+    if (error || !data) {
+      // Offline / RLS / missing table — keep the app usable with read-only data.
+      return rows.map(mapRow)
+    }
+    return data.map(mapRow)
+  }, [])
+
+  // Load the signed-in user's subscriptions (RLS scopes the query to them).
+  const loadData = useCallback(
+    async (userId) => {
+      setLoadingData(true)
       try {
         const { data, error } = await supabase
           .from('subscriptions')
           .select('*')
           .order('created_at', { ascending: true })
-        if (active && !error && Array.isArray(data) && data.length) {
-          setRemote(data.map(mapRow))
+        if (error) throw error
+        if (data && data.length) {
+          setSubscriptions(data.map(mapRow))
+        } else {
+          setSubscriptions(await seedFor(userId))
         }
       } catch {
-        // Network or missing-table error — fall back to DEFAULT_SUBS.
+        // Network/table error — fall back to bundled data so the UI renders.
+        setSubscriptions(DEFAULT_SUBS.map((s) => ({ ...s, slug: s.id })))
+      } finally {
+        setLoadingData(false)
       }
-    })()
-    return () => {
-      active = false
-    }
-  }, [])
+    },
+    [seedFor],
+  )
 
-  const setUploaded = (subs, source) => {
-    setParsed(subs)
-    setSourceLabel(source || null)
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(subs))
-      if (source) localStorage.setItem(SOURCE_KEY, source)
-    } catch {
-      // storage full / unavailable — fall back to in-memory only
+  useEffect(() => {
+    if (!authReady) return
+    // Syncing app state with the Supabase session/data is a legit effect use.
+    /* eslint-disable react-hooks/set-state-in-effect */
+    if (user) {
+      loadData(user.id)
+    } else {
+      setSubscriptions(null)
+      setSourceLabel(null)
     }
-  }
+    /* eslint-enable react-hooks/set-state-in-effect */
+  }, [authReady, user, loadData])
 
-  const reset = () => {
-    setParsed(null)
+  // Replace the user's set with a freshly parsed statement.
+  const setUploaded = useCallback(
+    async (parsedSubs, source) => {
+      if (!user) return { error: new Error('Not signed in.') }
+      const rows = parsedSubs.map((s) => toDbRow(s, user.id))
+      // Optimistic: show parsed data immediately.
+      setSubscriptions(rows.map(mapRow))
+      setSourceLabel(source || null)
+      try {
+        await supabase.from('subscriptions').delete().eq('user_id', user.id)
+        const { data, error } = await supabase.from('subscriptions').insert(rows).select()
+        if (error) throw error
+        if (data) setSubscriptions(data.map(mapRow))
+        return { error: null }
+      } catch (error) {
+        return { error }
+      }
+    },
+    [user],
+  )
+
+  // Reset back to the bundled starter set.
+  const reset = useCallback(async () => {
+    if (!user) return
     setSourceLabel(null)
     try {
-      localStorage.removeItem(STORAGE_KEY)
-      localStorage.removeItem(SOURCE_KEY)
-    } catch {}
-  }
-
-  // Persist a change back to Supabase. Updates local state optimistically,
-  // writes the (camelCase → snake_case mapped) patch to the row, and reverts
-  // the optimistic update if the write fails.
-  const updateStatus = async (id, patch) => {
-    const apply = (list) =>
-      list ? list.map((s) => (s.id === id ? { ...s, ...patch } : s)) : list
-
-    // Snapshot both sources so we can roll back if the write fails.
-    const prevRemote = remote
-    const prevParsed = parsed
-
-    setRemote((cur) => apply(cur))
-    setParsed((cur) => {
-      const next = apply(cur)
-      if (next && next !== cur) {
-        try {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
-        } catch {}
-      }
-      return next
-    })
-
-    const dbPatch = {}
-    if ('status' in patch) dbPatch.status = patch.status
-    if ('flagged' in patch) dbPatch.flagged = patch.flagged
-    if ('warningLabel' in patch) dbPatch.warning_label = patch.warningLabel
-
-    // .select() returns the affected rows. An RLS-blocked update succeeds with
-    // zero rows and no error — so treat "no rows changed" as a failure, else
-    // the UI would celebrate a write that never happened.
-    const { data, error } = await supabase
-      .from('subscriptions')
-      .update(dbPatch)
-      .eq('id', id)
-      .select()
-
-    const wroteNothing = !error && (!data || data.length === 0)
-    if (error || wroteNothing) {
-      setRemote(prevRemote)
-      setParsed(prevParsed)
-      if (prevParsed) {
-        try {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(prevParsed))
-        } catch {}
-      }
-      return {
-        error:
-          error ||
-          new Error('No rows were updated — the change was not saved (check permissions).'),
-      }
+      await supabase.from('subscriptions').delete().eq('user_id', user.id)
+    } catch {
+      // ignore — re-seed regardless
     }
-    return { error: null }
-  }
+    setSubscriptions(await seedFor(user.id))
+  }, [user, seedFor])
+
+  // Cancel a subscription: flip status to "cut", record it in `cancellations`,
+  // and roll the optimistic UI back if the write fails.
+  const cancelSubscription = useCallback(
+    async (id) => {
+      if (!user) return { error: new Error('Not signed in.') }
+      const target = subscriptions?.find((s) => s.id === id)
+      if (!target) return { error: new Error('Subscription not found.') }
+
+      const prev = subscriptions
+      setSubscriptions((cur) =>
+        cur.map((s) =>
+          s.id === id ? { ...s, status: 'cut', flagged: false, warningLabel: null } : s,
+        ),
+      )
+
+      try {
+        const { data, error } = await supabase
+          .from('subscriptions')
+          .update({ status: 'cut', flagged: false, warning_label: null })
+          .eq('id', id)
+          .select()
+        // An RLS-blocked update succeeds with zero rows and no error.
+        if (error || !data || data.length === 0) {
+          throw error || new Error('The change was not saved (check permissions).')
+        }
+        // Ledger entry is best-effort: a missing table must not undo the cancel.
+        try {
+          await supabase.from('cancellations').insert({
+            subscription_id: id,
+            user_id: user.id,
+            monthly_amount: target.amount,
+            yearly_saving: target.yearlyCost,
+            reason: target.warningLabel || target.status,
+          })
+        } catch {
+          // ignore — the subscription itself is already cancelled
+        }
+        return { error: null }
+      } catch (error) {
+        setSubscriptions(prev)
+        return { error }
+      }
+    },
+    [user, subscriptions],
+  )
+
+  const signOut = useCallback(async () => {
+    await supabase.auth.signOut()
+    setSubscriptions(null)
+    setSourceLabel(null)
+  }, [])
 
   const value = useMemo(() => {
-    // Priority: uploaded statement → Supabase data → bundled mock fallback.
-    const list =
-      parsed && parsed.length
-        ? parsed
-        : remote && remote.length
-          ? remote
-          : DEFAULT_SUBS
-    const totals = computeTotals(list)
+    const list = subscriptions || []
     return {
+      session,
+      user,
+      authReady,
+      loadingData,
       subscriptions: list,
-      hasUploaded: !!parsed,
+      hasUploaded: !!sourceLabel,
       sourceLabel,
-      totals,
+      totals: computeTotals(list),
       setUploaded,
       reset,
-      updateStatus,
-      hydrated,
+      cancelSubscription,
+      signOut,
     }
-  }, [parsed, remote, sourceLabel, hydrated])
+  }, [
+    session,
+    user,
+    authReady,
+    loadingData,
+    subscriptions,
+    sourceLabel,
+    setUploaded,
+    reset,
+    cancelSubscription,
+    signOut,
+  ])
 
   return (
     <SubscriptionsContext.Provider value={value}>
@@ -180,6 +266,7 @@ export function SubscriptionsProvider({ children }) {
   )
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useSubscriptions() {
   const ctx = useContext(SubscriptionsContext)
   if (!ctx) throw new Error('useSubscriptions must be used inside SubscriptionsProvider')
@@ -189,12 +276,14 @@ export function useSubscriptions() {
 function computeTotals(list) {
   return {
     monthlySpending: list.reduce(
-      (acc, s) => acc + (s.billingCycle === 'monthly' ? s.amount : 0),
+      (acc, s) =>
+        acc + (s.billingCycle === 'monthly' && s.status !== 'cut' ? s.amount : 0),
       0,
     ),
     potentialSavings: list.reduce(
       (acc, s) =>
-        ['warning', 'duplicate', 'unused'].includes(s.status) || s.flagged
+        s.status !== 'cut' &&
+        (['warning', 'duplicate', 'unused'].includes(s.status) || s.flagged)
           ? acc + s.yearlyCost
           : acc,
       0,
@@ -202,7 +291,8 @@ function computeTotals(list) {
     active: list.filter((s) => s.status === 'active').length,
     duplicate: list.filter((s) => s.status === 'duplicate').length,
     unused: list.filter((s) => s.status === 'unused').length,
-    flagged: list.filter((s) => s.flagged || s.status !== 'active').length,
+    cut: list.filter((s) => s.status === 'cut').length,
+    flagged: list.filter((s) => s.status !== 'active' && s.status !== 'cut').length,
     count: list.length,
   }
 }

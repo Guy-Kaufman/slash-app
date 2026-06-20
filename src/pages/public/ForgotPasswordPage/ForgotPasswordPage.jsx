@@ -1,14 +1,22 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import GradientButton from '../../../components/shared/GradientButton/GradientButton'
+import { supabase } from '../../../lib/supabaseClient'
 import '../LoginPage/LoginPage.css'
 
 function ForgotPasswordPage() {
   const [email, setEmail] = useState('')
   const [sent, setSent] = useState(false)
+  const [busy, setBusy] = useState(false)
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault()
+    setBusy(true)
+    // We always show the same confirmation (don't reveal whether an email exists).
+    await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/login`,
+    })
+    setBusy(false)
     setSent(true)
   }
 
@@ -48,7 +56,9 @@ function ForgotPasswordPage() {
               />
             </label>
 
-            <GradientButton type="submit">Send reset link</GradientButton>
+            <GradientButton type="submit" disabled={busy}>
+              {busy ? 'Sending…' : 'Send reset link'}
+            </GradientButton>
 
             <Link to="/login" className="auth-page__inline-link">
               Back to sign in

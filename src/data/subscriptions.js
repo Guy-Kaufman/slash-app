@@ -309,24 +309,6 @@ export const SUBSCRIPTIONS = [
   },
 ]
 
-export const TOTALS = {
-  monthlySpending: SUBSCRIPTIONS.reduce(
-    (acc, s) => acc + (s.billingCycle === 'monthly' ? s.amount : 0),
-    0,
-  ),
-  potentialSavings: SUBSCRIPTIONS.reduce(
-    (acc, s) =>
-      ['warning', 'duplicate', 'unused'].includes(s.status)
-        ? acc + s.yearlyCost
-        : acc,
-    0,
-  ),
-  active: SUBSCRIPTIONS.filter((s) => s.status === 'active').length,
-  duplicate: SUBSCRIPTIONS.filter((s) => s.status === 'duplicate').length,
-  unused: SUBSCRIPTIONS.filter((s) => s.status === 'unused').length,
-  count: SUBSCRIPTIONS.length,
-}
-
 export const SUPPORTED_BANKS = [
   { id: 'leumi', name: 'Bank Leumi', logo: leumiLogo },
   { id: 'hapoalim', name: 'Bank Hapoalim', logo: hapoalimLogo },
@@ -353,18 +335,9 @@ export const ONBOARDING_STEPS = [
     icon: 'task_alt',
     title: 'Cut what you don\'t use',
     body:
-      'Generate a polished cancellation letter in Hebrew, Arabic, or Russian — and watch your savings add up.',
+      'Cancel a subscription in one tap. Slash records it and tallies up exactly how much you\'re saving each year.',
   },
 ]
 
-export const MOCK_USER = {
-  name: 'Guy Kaufman',
-  email: 'guy@example.com',
-  initials: 'GK',
-}
-
-export function getSubscriptionById(id) {
-  return SUBSCRIPTIONS.find((s) => s.id === id) || null
-}
 
 export default SUBSCRIPTIONS

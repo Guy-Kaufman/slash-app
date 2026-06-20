@@ -1,127 +1,165 @@
 # Slash — Cut your hidden expenses
 
-A modern dark-mode fintech web app that helps users detect forgotten subscriptions, duplicated charges, unused services, and generate cancellation letters from a bank statement.
+Slash is a full-stack web app that reads a user's bank statement, automatically
+detects recurring subscriptions, flags **duplicates, unused services, and price
+hikes**, and helps the user cancel them — tracking every cancellation and the
+money it saves.
 
-This is **Module 6 (Frontend Development)** of the Full-Stack AI course taught by Yariv Gilad. The deliverable is a frontend-only React + Vite shell, built directly from a Stitch design export, with no backend.
+> **Live demo:** _add your Vercel URL here_
+> **Demo account:** `demo@slash.app` / `DemoPass123`
 
-## Stack
+![Slash ERD](docs/erd.svg)
 
-- **React 18 + Vite** (JavaScript, not TypeScript)
-- **React Router v6** for routing
-- **Custom CSS** with CSS variables (no Tailwind, no UI framework on top)
-- **Inter** typeface + **Material Symbols Outlined** icons (Google Fonts)
-- **xlsx** (SheetJS) — local-only Excel/CSV parsing
-- **shadcn/ui** primitives (Input, Select, Dialog, Toast, Checkbox, DropdownMenu)
+---
 
-## Run it
+## The problem
+
+The average household quietly leaks money through subscriptions it forgot about:
+a second cloud-storage plan, a design tool from a project that ended, a streaming
+service nobody watches, an app that silently raised its price. Israeli bank and
+credit-card statements make this **hard to see** — charges are scattered across
+months, named with cryptic merchant codes, and split between accounts.
+
+People "solve" this today by **scrolling their statement in the bank app**,
+**exporting to Excel and eyeballing it**, or **just not bothering** — and keep
+paying. Slash turns that manual hunt into a 60-second, automated review.
+
+## Who it's for
+
+Israeli consumers (₪, Hebrew-aware statement parsing) who pay for several digital
+subscriptions and want to stop overpaying — without handing their bank login to a
+third party. The whole detection step runs **locally in the browser**; the file
+never leaves the device.
+
+## Competitors & differentiation
+
+| Alternative | What it is | Why Slash is better |
+| --- | --- | --- |
+| **Excel / manual review** | Export statement, sort, scan by eye | Slash auto-groups by merchant, detects recurrence + duplicates, and computes yearly waste instantly |
+| **Doing nothing** | The default | Slash surfaces the exact ₪/year you'd save, turning vague guilt into one-click action |
+| **Bank "subscriptions" tabs** | Bank-locked list of standing orders | Slash works across **any** bank export, catches card-based subscriptions banks miss, and flags duplicates *across* services (e.g. iCloud + Google One) |
+| **Rocket Money / Truebill (US)** | Subscription manager + negotiation | Those are US-only and require linking bank credentials. Slash is ₪-native and privacy-first (local parsing), no bank login required |
+
+**Slash's edge:** privacy-first local parsing, Hebrew-statement aware, cross-service
+duplicate detection, and an AI recommendation per subscription — wrapped in a
+polished, mobile-first product.
+
+---
+
+## Core flow (what to test)
+
+1. **Register / sign in** (`/register`, `/login`) — real Supabase auth.
+2. **Onboarding** → **Upload** (`/upload`) — drag in an Excel/CSV, or click
+   **Download demo statement** for a realistic example. (New accounts are also
+   pre-seeded with sample subscriptions so the dashboard is never empty.)
+3. **Processing** → **Dashboard** (`/dashboard`) — monthly spend, potential
+   yearly savings, and your subscriptions.
+4. **Subscription detail** (`/subscription/:id`) — usage, next billing, yearly
+   cost, and a **Slash AI recommendation**.
+5. **Cancel** → **Confirm** (`/review`) — the subscription is marked cut and
+   written back to Supabase, plus a row in the `cancellations` ledger.
+6. **Savings report** (`/savings`) and **Settings** (`/settings`, with sign-out
+   and "reset data").
+
+---
+
+## Tech stack
+
+- **React 19 + Vite** (JavaScript)
+- **React Router v7**
+- **Supabase** — Postgres database, Auth, and an Edge Function
+- **Custom CSS** with design tokens (no Tailwind) · **Bricolage Grotesque** + **Hanken Grotesk**
+- **xlsx (SheetJS)** — local, in-browser statement parsing
+- **sonner** — toasts · **Radix UI** primitives
+
+## External services & integrations
+
+| Service | Type | What it's used for |
+| --- | --- | --- |
+| **Supabase Auth** | Authentication | Email/password sign-up & sign-in; session management. Google/Microsoft/Facebook buttons call `signInWithOAuth` (enable the provider in Supabase to activate). |
+| **Supabase Postgres** | Database / API | Stores each user's `subscriptions` and `cancellations`, fetched via the auto-generated REST API, protected by Row Level Security. |
+| **Supabase Edge Function (`recommend`)** | Server-side logic | Calls the **Anthropic Claude API** to generate a per-subscription recommendation. The API key lives only in the function's environment — never in the browser bundle. Falls back to bundled text if unset. |
+| **Anthropic Claude API** | External AI API | Generates the "Slash AI recommendation" text (via the Edge Function). |
+| **Google Fonts** | Assets | Bricolage Grotesque, Hanken Grotesk, Material Symbols. |
+
+## Data model (ERD)
+
+See **[docs/erd.md](docs/erd.md)** for the full diagram, column types, and RLS
+policies. In short:
+
+```
+auth.users (1) ──< subscriptions (∞)
+auth.users (1) ──< cancellations (∞)
+subscriptions (1) ──< cancellations (∞)
+```
+
+Both `public` tables enforce owner-only access via `auth.uid() = user_id`.
+
+---
+
+## Run locally
 
 ```bash
 npm install
-npm run dev
+cp .env.example .env.local   # then fill in your Supabase URL + anon key
+npm run dev                  # http://localhost:5173
 ```
 
-The app boots at <http://localhost:5173/>. No env vars, no backend, no auth.
+### Environment variables
 
-## Walking the flow
+| Var | Where to find it |
+| --- | --- |
+| `VITE_SUPABASE_URL` | Supabase → Project Settings → API → Project URL |
+| `VITE_SUPABASE_ANON_KEY` | Supabase → Project Settings → API → `anon` public key |
 
-1. `/` — Welcome screen, click **Get Started**
-2. `/onboarding` — 3-step intro
-3. `/upload` — drag & drop a statement, **or** click **Download demo statement (.xlsx)** to grab a realistic example
-4. `/processing` — short loading animation
-5. `/dashboard` — hero monthly amount, savings pill, top subscription cards
-6. `/subscription/:id` — detail card with last-usage / next-billing / yearly cost + Cancel CTA
-7. `/review?cancel=:id` — cancel-confirmation screen with savings highlight
-8. `/savings` — full subscription list with filter chips
-9. `/settings` — profile, preferences, **Reset uploaded data** to start over
+The anon key is meant to be public; access is guarded by RLS, not by hiding the key.
 
-Auth pages (`/login`, `/register`, `/forgot-password`) are visual shells — submit just navigates onward.
+### Database setup
 
-## How the demo statement works
+Run the migrations in [`supabase/migrations`](supabase/migrations) in order, in the
+Supabase **SQL Editor** (`0001` → `0004`). Then, under **Auth → Providers →
+Email**, disable "Confirm email" for the course demo so accounts can sign in
+immediately, and create the demo account (`demo@slash.app` / `DemoPass123`) via
+the app's Register screen.
+
+### AI Edge Function (optional but recommended)
 
 ```bash
-node scripts/generate-demo-xlsx.mjs
+supabase functions deploy recommend
+supabase secrets set ANTHROPIC_API_KEY=sk-ant-...
 ```
 
-This (re)generates [`public/slash-demo-statement.xlsx`](public/slash-demo-statement.xlsx) — 4 months of transactions with 8 recurring merchants (Netflix, Spotify, Adobe, Dropbox, ChatGPT, iCloud, Notion, Figma) plus realistic noise (groceries, gas, etc.) and an intentional Adobe duplicate in February.
+Without it, the app shows the bundled rule-based recommendations instead of live AI.
 
-When you upload that file (or your own bank export) on `/upload`:
+## Deploy to Vercel
 
-1. [`src/utils/parseStatement.js`](src/utils/parseStatement.js) reads the file in the browser (no upload to any server) and groups debit transactions by merchant.
-2. A merchant counts as recurring when ≥2 charges share the same amount in ≥50% of occurrences.
-3. A merchant is flagged as a duplicate if 2+ matching charges land in the same calendar month.
-4. The detected list is stored in a [`SubscriptionsContext`](src/context/SubscriptionsContext.jsx) (with `localStorage` persistence) so Dashboard, Subscription Detail, and Savings all read the same data.
-5. **Settings → Reset uploaded data** clears the parsed list and falls back to the built-in demo dataset.
+1. Push to GitHub and **Import** the repo in Vercel (framework auto-detected as Vite; `vercel.json` adds SPA rewrites).
+2. Add the two `VITE_SUPABASE_*` env vars in **Vercel → Settings → Environment Variables**.
+3. In Supabase **Auth → URL Configuration**, add your Vercel URL to the allowed redirect URLs.
+4. Deploy, then open the URL in a private window to confirm the full flow works.
 
-The parser tolerates Hebrew column headers (`תאריך`, `תיאור`, `חיוב`), Excel serial dates, and `dd/mm/yyyy` strings.
+## How this was built (Vibe Coding)
+
+Slash was built iteratively with AI coding tools: a Stitch design export drove the
+visual system (mirrored as design tokens in `globals.css`), and the React app,
+Supabase schema, RLS policies, and Edge Function were generated and refined
+through prompt-driven development.
 
 ## Project structure
 
 ```
-slash_app/
-  DESIGN.md                  ← design system, every token is mirrored in globals.css
-  COMPONENTS.md              ← per-page component breakdown
-  SITEMAP.md                 ← routes
-  TASK_PLAN.md               ← assignment task plan
-  public/
-    slash-demo-statement.xlsx
-  scripts/
-    generate-demo-xlsx.mjs
-  src/
-    main.jsx
-    App.jsx
-    styles/globals.css       ← CSS variables: colors, gradients, spacing, type scale
-    context/
-      SubscriptionsContext.jsx
-    data/
-      subscriptions.js       ← built-in demo dataset (used if nothing uploaded)
-    utils/
-      parseStatement.js
-    layouts/
-      PublicLayout/          ← Navbar + Footer for marketing pages
-      AppLayout/             ← AppHeader + BottomNav for the app shell
-    components/
-      shared/                ← AppHeader, BottomNav, Footer, Navbar, GlowBlob,
-                               GradientButton, SecondaryButton, ScreenHeader,
-                               SectionHeader, StatusBadge
-      page-specific/         ← HeroAmount, SubscriptionCard, FileDropZone,
-                               LanguageSelector, ChargeBreakdownCard, …
-      ui/                    ← shadcn primitives (Input, Select, Dialog, …)
-    pages/
-      public/                ← LandingPage, LoginPage, RegisterPage, ForgotPasswordPage
-      app/                   ← OnboardingPage, UploadPage, ProcessingPage, ReviewPage,
-                               DashboardPage, SubscriptionDetailPage, SavingsReportPage,
-                               SettingsPage
+src/
+  context/SubscriptionsContext.jsx   ← auth session + per-user data, seeding, cancel
+  lib/supabaseClient.js, lib/recommend.js
+  utils/parseStatement.js            ← in-browser Excel/CSV parsing (Hebrew-aware)
+  data/subscriptions.js              ← bundled starter set + supported banks
+  layouts/  components/  pages/      ← UI (each component in its own folder + .css)
+supabase/
+  migrations/                        ← 0001–0004 (schema + RLS)
+  functions/recommend/               ← Claude-backed Edge Function
+docs/
+  erd.md, erd.svg                    ← data model
 ```
-
-Every component lives in its own folder with a colocated `.css` file. No hardcoded colors or spacing inside components — everything goes through CSS variables defined in [`src/styles/globals.css`](src/styles/globals.css).
-
-## Design source
-
-The app visually matches the Stitch export in [`DESIGN.md`](DESIGN.md). Four canonical screens were translated 1:1:
-
-- **Welcome** → [LandingPage](src/pages/public/LandingPage/LandingPage.jsx)
-- **Subscriptions Dashboard** → [DashboardPage](src/pages/app/DashboardPage/DashboardPage.jsx)
-- **Subscription Details** → [SubscriptionDetailPage](src/pages/app/SubscriptionDetailPage/SubscriptionDetailPage.jsx)
-- **Cancel Confirmation** → [ReviewPage](src/pages/app/ReviewPage/ReviewPage.jsx)
-
-The other 8 screens reuse the same tokens and component patterns.
-
-## Routes
-
-| URL | Page |
-| --- | --- |
-| `/` | LandingPage |
-| `/login` | LoginPage |
-| `/register` | RegisterPage |
-| `/forgot-password` | ForgotPasswordPage |
-| `/onboarding` | OnboardingPage |
-| `/upload` | UploadPage |
-| `/processing` | ProcessingPage |
-| `/review` | ReviewPage |
-| `/dashboard` | DashboardPage |
-| `/subscription/:id` | SubscriptionDetailPage |
-| `/savings` | SavingsReportPage |
-| `/settings` | SettingsPage |
 
 ## License
 

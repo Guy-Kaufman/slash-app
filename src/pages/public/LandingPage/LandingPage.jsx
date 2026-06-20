@@ -1,10 +1,12 @@
 import { useNavigate } from 'react-router-dom'
 import GradientButton from '../../../components/shared/GradientButton/GradientButton'
 import GlowBlob from '../../../components/shared/GlowBlob/GlowBlob'
+import { useSubscriptions } from '../../../context/SubscriptionsContext'
 import './LandingPage.css'
 
 function LandingPage() {
   const navigate = useNavigate()
+  const { session } = useSubscriptions()
 
   return (
     <div className="landing-page">
@@ -24,7 +26,7 @@ function LandingPage() {
         </div>
 
         <div className="landing-page__cta">
-          <GradientButton onClick={() => navigate('/onboarding')}>
+          <GradientButton onClick={() => navigate(session ? '/dashboard' : '/register')}>
             Get Started
           </GradientButton>
 
