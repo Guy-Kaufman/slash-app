@@ -15,18 +15,6 @@ const PROVIDERS = [
       </svg>
     ),
   },
-  {
-    id: 'azure',
-    label: 'Continue with Microsoft',
-    icon: (
-      <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
-        <path fill="#F25022" d="M1 1h10.2v10.2H1z" />
-        <path fill="#7FBA00" d="M12.8 1H23v10.2H12.8z" />
-        <path fill="#00A4EF" d="M1 12.8h10.2V23H1z" />
-        <path fill="#FFB900" d="M12.8 12.8H23V23H12.8z" />
-      </svg>
-    ),
-  },
 ]
 
 // Ask Supabase which OAuth providers are actually enabled, so we only ever show
