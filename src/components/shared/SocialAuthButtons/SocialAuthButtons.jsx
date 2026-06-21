@@ -1,4 +1,4 @@
-import { toast } from 'sonner'
+import { useEffect, useState } from 'react'
 import { supabase } from '../../../lib/supabaseClient'
 import './SocialAuthButtons.css'
 
@@ -16,7 +16,7 @@ const PROVIDERS = [
     ),
   },
   {
-    id: 'microsoft',
+    id: 'azure',
     label: 'Continue with Microsoft',
     icon: (
       <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
@@ -33,39 +33,60 @@ const PROVIDERS = [
     icon: (
       <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
         <path fill="#1877F2" d="M24 12a12 12 0 1 0-13.9 11.9v-8.4H7.1V12h3V9.4c0-3 1.8-4.6 4.5-4.6 1.3 0 2.6.2 2.6.2v2.9h-1.5c-1.4 0-1.9.9-1.9 1.8V12h3.3l-.5 3.5h-2.8v8.4A12 12 0 0 0 24 12z" />
-        <path fill="#FFFFFF" d="M16.7 15.5 17.2 12h-3.3V9.7c0-.9.5-1.8 1.9-1.8h1.5V5c0-.0-1.3-.2-2.6-.2-2.7 0-4.5 1.6-4.5 4.6V12h-3v3.5h3v8.4a12 12 0 0 0 3.8 0v-8.4h2.7z" />
       </svg>
     ),
   },
 ]
 
-function SocialAuthButtons() {
-  const handleProvider = async (id) => {
-    const { error } = await supabase.auth.signInWithOAuth({
+// Ask Supabase which OAuth providers are actually enabled, so we only ever show
+// buttons that work — no dead-ends on providers that aren't configured.
+function SocialAuthButtons({ dividerText = 'or continue with email' }) {
+  const [providers, setProviders] = useState([])
+
+  useEffect(() => {
+    let active = true
+    fetch(`${import.meta.env.VITE_SUPABASE_URL}/auth/v1/settings`, {
+      headers: { apikey: import.meta.env.VITE_SUPABASE_ANON_KEY },
+    })
+      .then((r) => r.json())
+      .then((settings) => {
+        if (!active) return
+        setProviders(PROVIDERS.filter((p) => settings?.external?.[p.id]))
+      })
+      .catch(() => {})
+    return () => {
+      active = false
+    }
+  }, [])
+
+  const handleProvider = (id) => {
+    supabase.auth.signInWithOAuth({
       provider: id,
       options: { redirectTo: `${window.location.origin}/dashboard` },
     })
-    if (error) {
-      toast.error(
-        `${id[0].toUpperCase() + id.slice(1)} sign-in isn't enabled yet. Use email instead.`,
-      )
-    }
   }
 
+  if (!providers.length) return null
+
   return (
-    <div className="social-auth">
-      {PROVIDERS.map((provider) => (
-        <button
-          key={provider.id}
-          type="button"
-          className="social-auth__button"
-          onClick={() => handleProvider(provider.id)}
-        >
-          <span className="social-auth__icon">{provider.icon}</span>
-          <span className="social-auth__label">{provider.label}</span>
-        </button>
-      ))}
-    </div>
+    <>
+      <div className="social-auth">
+        {providers.map((provider) => (
+          <button
+            key={provider.id}
+            type="button"
+            className="social-auth__button"
+            onClick={() => handleProvider(provider.id)}
+          >
+            <span className="social-auth__icon">{provider.icon}</span>
+            <span className="social-auth__label">{provider.label}</span>
+          </button>
+        ))}
+      </div>
+      <div className="auth-page__divider" role="separator">
+        <span>{dividerText}</span>
+      </div>
+    </>
   )
 }
 

@@ -49,11 +49,7 @@ function RegisterPage() {
           </p>
         </header>
 
-        <SocialAuthButtons />
-
-        <div className="auth-page__divider" role="separator">
-          <span>or sign up with email</span>
-        </div>
+        <SocialAuthButtons dividerText="or sign up with email" />
 
         <form className="auth-page__form" onSubmit={handleSubmit}>
           <label className="auth-page__field">
