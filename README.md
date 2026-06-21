@@ -50,8 +50,8 @@ polished, mobile-first product.
 
 1. **Register / sign in** (`/register`, `/login`) — real Supabase auth.
 2. **Onboarding** → **Upload** (`/upload`) — drag in an Excel/CSV, or click
-   **Download demo statement** for a realistic example. (New accounts are also
-   pre-seeded with sample subscriptions so the dashboard is never empty.)
+   **Download demo statement** for a realistic example. A brand-new account
+   starts with an empty dashboard until a statement is uploaded.
 3. **Processing** → **Dashboard** (`/dashboard`) — monthly spend, potential
    yearly savings, and your subscriptions.
 4. **Subscription detail** (`/subscription/:id`) — usage, next billing, yearly

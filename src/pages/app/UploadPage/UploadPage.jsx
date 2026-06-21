@@ -145,7 +145,7 @@ function UploadPage() {
       </GradientButton>
 
       <SecondaryButton variant="ghost" onClick={() => navigate('/dashboard')}>
-        Skip — show demo data
+        Skip for now
       </SecondaryButton>
     </div>
   )

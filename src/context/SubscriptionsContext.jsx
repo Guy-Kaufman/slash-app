@@ -6,7 +6,6 @@ import {
   useMemo,
   useState,
 } from 'react'
-import { SUBSCRIPTIONS as DEFAULT_SUBS } from '../data/subscriptions'
 import { supabase } from '../lib/supabaseClient'
 
 const SubscriptionsContext = createContext(null)
@@ -95,49 +94,32 @@ export function SubscriptionsProvider({ children }) {
     }
   }, [])
 
-  // Insert the bundled starter set for a brand-new account so the dashboard is
-  // never empty. Returns the app-shaped rows (or the in-memory fallback).
-  const seedFor = useCallback(async (userId) => {
-    const rows = DEFAULT_SUBS.map((s) => toDbRow({ ...s, slug: s.id }, userId))
-    const { data, error } = await supabase.from('subscriptions').insert(rows).select()
-    if (error || !data) {
-      // Offline / RLS / missing table — keep the app usable with read-only data.
-      return rows.map(mapRow)
-    }
-    return data.map(mapRow)
-  }, [])
-
   // Load the signed-in user's subscriptions (RLS scopes the query to them).
-  const loadData = useCallback(
-    async (userId) => {
-      setLoadingData(true)
-      try {
-        const { data, error } = await supabase
-          .from('subscriptions')
-          .select('*')
-          .order('created_at', { ascending: true })
-        if (error) throw error
-        if (data && data.length) {
-          setSubscriptions(data.map(mapRow))
-        } else {
-          setSubscriptions(await seedFor(userId))
-        }
-      } catch {
-        // Network/table error — fall back to bundled data so the UI renders.
-        setSubscriptions(DEFAULT_SUBS.map((s) => ({ ...s, slug: s.id })))
-      } finally {
-        setLoadingData(false)
-      }
-    },
-    [seedFor],
-  )
+  // A brand-new account simply has none — the user starts with an empty
+  // dashboard until they upload a statement of their own.
+  const loadData = useCallback(async () => {
+    setLoadingData(true)
+    try {
+      const { data, error } = await supabase
+        .from('subscriptions')
+        .select('*')
+        .order('created_at', { ascending: true })
+      if (error) throw error
+      setSubscriptions(data ? data.map(mapRow) : [])
+    } catch {
+      // Network/table error — show an empty state rather than fake data.
+      setSubscriptions([])
+    } finally {
+      setLoadingData(false)
+    }
+  }, [])
 
   useEffect(() => {
     if (!authReady) return
     // Syncing app state with the Supabase session/data is a legit effect use.
     /* eslint-disable react-hooks/set-state-in-effect */
     if (user) {
-      loadData(user.id)
+      loadData()
     } else {
       setSubscriptions(null)
       setSourceLabel(null)
@@ -166,17 +148,17 @@ export function SubscriptionsProvider({ children }) {
     [user],
   )
 
-  // Reset back to the bundled starter set.
+  // Clear the user's imported data — back to an empty account.
   const reset = useCallback(async () => {
     if (!user) return
     setSourceLabel(null)
     try {
       await supabase.from('subscriptions').delete().eq('user_id', user.id)
     } catch {
-      // ignore — re-seed regardless
+      // ignore — clear locally regardless
     }
-    setSubscriptions(await seedFor(user.id))
-  }, [user, seedFor])
+    setSubscriptions([])
+  }, [user])
 
   // Cancel a subscription: flip status to "cut", record it in `cancellations`,
   // and roll the optimistic UI back if the write fails.
