@@ -5,7 +5,7 @@ detects recurring subscriptions, flags **duplicates, unused services, and price
 hikes**, and helps the user cancel them — tracking every cancellation and the
 money it saves.
 
-> **Live demo:** _add your Vercel URL here_
+> **Live demo:** https://slash-app-tau.vercel.app
 > **Demo account:** `demo@slash.app` / `DemoPass123`
 
 ![Slash ERD](docs/erd.svg)
